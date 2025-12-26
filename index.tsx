@@ -150,6 +150,7 @@ const translations = {
     langName: "ES",
     navAdmin: "Panel Maestro",
     navPremium: "Herramientas Premium",
+    navAnalyzer: "Analizador",
     close: "Cerrar",
     exportJson: "Exportar JSON",
     exportTxt: "Exportar TXT",
@@ -182,7 +183,7 @@ const translations = {
   en: {
     badge: "Create an offer so good people feel stupid saying no",
     heroTitle: "STOP SELLING <span class='text-[#FF5C00]'>CHEAP</span> AND START BEING <span class='text-[#FF5C00]'>IRRESISTIBLE</span>",
-    heroSub: "The AI that designs your Grand Slam offer in seconds. Don't compete on price, compete on <span class='text-white font-black underline decoration-[#FF5C00]'>massive value</span>.",
+    heroSub: "The IA que diseña tu oferta Grand Slam en segundos. Don't compete on price, compete on <span class='text-white font-black underline decoration-[#FF5C00]'>massive value</span>.",
     placeholder: "Tell me what you sell, to whom, and how you charge right now. E.g.: 'Gym membership $30/mo for women 25-40 looking to lose weight' or 'Clothing online store, avg ticket $45'...",
     generateBtn: "GENERATE GRAND SLAM OFFER",
     generatingBtn: "DESIGNING MASSIVE VALUE...",
@@ -204,6 +205,7 @@ const translations = {
     langName: "EN",
     navAdmin: "Master Panel",
     navPremium: "Premium Tools",
+    navAnalyzer: "Analyzer",
     close: "Close",
     exportJson: "Export JSON",
     exportTxt: "Export TXT",
@@ -736,6 +738,7 @@ const App = () => {
         .replace(/#+\s/g, '')
         .replace(/\*\*/g, '')
         .replace(/\*\*/g, '')
+        .replace(/\*\*/g, '')
         .replace(/\*/g, '•');
         
       const splitText = doc.splitTextToSize(cleanText, 175);
@@ -942,7 +945,7 @@ const App = () => {
               <Languages className="w-4 h-4 text-[#FF5C00]" />
               {t('langName')}
             </button>
-            
+
             <button 
               onClick={() => setShowPremiumHub(true)}
               className={`text-xs font-black uppercase flex items-center gap-2 px-5 py-2.5 rounded-full border transition-all ${isScaleMaster ? 'bg-[#FF5C00]/10 border-[#FF5C00]/40 text-[#FF5C00] hover:bg-[#FF5C00]/20' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'}`}
