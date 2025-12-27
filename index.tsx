@@ -132,7 +132,7 @@ const STARTER_LIMIT = 10;
 // --- Translations ---
 const translations = {
   es: {
-    badge: "Crea una oferta tan buena que la gente se sienta estúpida diciendo que no",
+    badge: "Crea ofertas irresistibles que venden solas",
     heroTitle: "DEJA DE VENDER <span class='text-[#FF5C00]'>BARATO</span> Y EMPIEZA A SER <span class='text-[#FF5C00]'>IRRESISTIBLE</span>",
     heroSub: "La IA que diseña tu oferta Grand Slam en segundos. No compitas por precio, compite por <span class='text-white font-black underline decoration-[#FF5C00]'>valor masivo</span>.",
     placeholder: "Cuéntame qué vendes, a quién y cómo lo cobras ahora mismo. Ej: 'Membresía gym 30€/mes para mujeres 25-40 que quieren perder peso' o 'Tienda online de ropa, ticket medio 45€'...",
@@ -152,8 +152,8 @@ const translations = {
     pricingTitle: "ELIGE TU VEHÍCULO DE ESCALADO",
     pricingSub: "Haz que se sientan estúpidos diciendo que no.",
     lockedTitle: "ACCESO BLOQUEADO",
-    lockedSub: "HAS AGOTADO TU CRÉDITO ESTRATÉGICO. LOS AFICIONADOS SE QUEDAN AQUÍ, LOS PROFESIONALES ESCALAN.",
-    unlockNow: "DESBLOQUEAR AHORA",
+    lockedSub: "HAS AGOTADO TU BÚSQUEDA GRATUITA. REGÍSTRATE GRATIS PARA SEGUIR ESCALANDO.",
+    unlockNow: "REGÍSTRATE GRATIS Y PRUÉBALA",
     langName: "ES",
     navAdmin: "Panel Maestro",
     navPremium: "Herramientas Premium",
@@ -166,7 +166,7 @@ const translations = {
     exportTxt: "Exportar TXT",
     exportPdf: "Exportar PDF",
     successMsg: "¡BIENVENIDO A BORDO!",
-    successSub: "Un estratega se pondrá en contacto contigo pronto.",
+    successSub: "Tu acceso ha sido desbloqueado. Ya puedes cerrar esta ventana y empezar a crear.",
     formName: "NOMBRE COMPLETO",
     formEmail: "TU EMAIL DE NEGOCIOS",
     formPhone: "TELÉFONO (PARA WHATSAPP)",
@@ -191,9 +191,9 @@ const translations = {
     premiumLocked: "PLAN SCALE MASTER REQUERIDO"
   },
   en: {
-    badge: "Create an offer so good people feel stupid saying no",
+    badge: "Create irresistible offers that sell themselves",
     heroTitle: "STOP SELLING <span class='text-[#FF5C00]'>CHEAP</span> AND START BEING <span class='text-[#FF5C00]'>IRRESISTIBLE</span>",
-    heroSub: "The IA que diseña tu oferta Grand Slam en segundos. Don't compete on price, compete on <span class='text-white font-black underline decoration-[#FF5C00]'>massive value</span>.",
+    heroSub: "The AI that designs your Grand Slam offer in seconds. Don't compete on price, compete on <span class='text-white font-black underline decoration-[#FF5C00]'>massive value</span>.",
     placeholder: "Tell me what you sell, to whom, and how you charge right now. E.g.: 'Gym membership $30/mo for women 25-40 looking to lose weight' or 'Clothing online store, avg ticket $45'...",
     generateBtn: "GENERATE GRAND SLAM OFFER",
     generatingBtn: "DESIGNING MASSIVE VALUE...",
@@ -211,8 +211,8 @@ const translations = {
     pricingTitle: "CHOOSE YOUR SCALING VEHICLE",
     pricingSub: "Make them feel stupid saying no.",
     lockedTitle: "ACCESS LOCKED",
-    lockedSub: "YOU HAVE EXHAUSTED YOUR STRATEGIC CREDIT. AMATEURS STAY HERE, PROFESSIONALS SCALE.",
-    unlockNow: "UNLOCK NOW",
+    lockedSub: "YOU HAVE EXHAUSTED YOUR FREE SEARCH. REGISTER FOR FREE TO CONTINUE SCALING.",
+    unlockNow: "REGISTER FOR FREE & TRY IT",
     langName: "EN",
     navAdmin: "Master Panel",
     navPremium: "Premium Tools",
@@ -225,7 +225,7 @@ const translations = {
     exportTxt: "Export TXT",
     exportPdf: "Export PDF",
     successMsg: "WELCOME ABOARD!",
-    successSub: "A strategist will contact you soon.",
+    successSub: "Your access has been unlocked. You can now close this window and start creating.",
     formName: "FULL NAME",
     formEmail: "BUSINESS EMAIL",
     formPhone: "PHONE (FOR WHATSAPP)",
@@ -471,6 +471,7 @@ const App = () => {
       setUserPlan('agency');
       localStorage.setItem(USER_PLAN_KEY, 'agency');
     } else {
+      // Free Plan and Starter both get the "starter" experience with credits
       setUserPlan('starter');
       localStorage.setItem(USER_PLAN_KEY, 'starter');
     }
@@ -552,7 +553,7 @@ const App = () => {
 
   const generateOffer = async () => {
     const currentLimit = userPlan === 'starter' ? STARTER_LIMIT : MAX_FREE_TRIAL;
-    const isLockedCheck = !isAdmin && userPlan !== 'scale-master' && userPlan !== 'agency' && trialCount >= currentLimit;
+    const isLockedCheck = !isAdmin && userPlan === 'free' && trialCount >= MAX_FREE_TRIAL;
     
     if (!input.trim() || isLockedCheck) return;
     
@@ -585,7 +586,7 @@ const App = () => {
       const final = { text: fullText, isStreaming: false, input, offerType, timestamp: Date.now() };
       setResult(final);
       
-      if (!isAdmin && userPlan !== 'scale-master' && userPlan !== 'agency') {
+      if (!isAdmin) {
         const newCount = trialCount + 1;
         setTrialCount(newCount);
         localStorage.setItem(TRIAL_COUNT_KEY, newCount.toString());
@@ -788,7 +789,6 @@ const App = () => {
       splitText.forEach((line: string) => {
         if (yPos > 265) {
           doc.addPage();
-          // Small header for new pages
           doc.setFillColor(15, 15, 15);
           doc.rect(0, 0, 210, 15, 'F');
           doc.setTextColor(255, 255, 255);
@@ -799,7 +799,6 @@ const App = () => {
           doc.setTextColor(40, 40, 40);
         }
         
-        // Custom styling for headers in the text
         if (line.startsWith('---')) {
           doc.setFont("helvetica", "bold");
           doc.setTextColor(brandColor[0], brandColor[1], brandColor[2]);
@@ -828,9 +827,9 @@ const App = () => {
     document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const currentTrialLimit = userPlan === 'starter' ? STARTER_LIMIT : MAX_FREE_TRIAL;
-  const isLocked = !isAdmin && userPlan !== 'scale-master' && userPlan !== 'agency' && trialCount >= currentTrialLimit;
+  const isLocked = !isAdmin && userPlan === 'free' && trialCount >= MAX_FREE_TRIAL;
   const isScaleMaster = isAdmin || userPlan === 'scale-master' || userPlan === 'agency';
+  const currentLimit = userPlan === 'starter' ? STARTER_LIMIT : MAX_FREE_TRIAL;
 
   const CompetitorContent = () => (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
@@ -1189,6 +1188,7 @@ const App = () => {
                           <tr className="border-b border-white/10">
                              <th className="py-4 px-2 text-[10px] font-black uppercase text-gray-500">Nombre</th>
                              <th className="py-4 px-2 text-[10px] font-black uppercase text-gray-500">Email</th>
+                             <th className="py-4 px-2 text-[10px] font-black uppercase text-gray-500">Teléfono</th>
                              <th className="py-4 px-2 text-[10px] font-black uppercase text-gray-500">Plan</th>
                              <th className="py-4 px-2 text-[10px] font-black uppercase text-gray-500">Fecha</th>
                           </tr>
@@ -1198,6 +1198,7 @@ const App = () => {
                              <tr key={lead.id} className="border-b border-white/5">
                                 <td className="py-4 px-2 font-black text-sm uppercase italic">{lead.name}</td>
                                 <td className="py-4 px-2 text-xs text-gray-400">{lead.email}</td>
+                                <td className="py-4 px-2 text-xs text-gray-400">{lead.phone}</td>
                                 <td className="py-4 px-2"><span className="text-[9px] font-black bg-[#FF5C00]/10 text-[#FF5C00] px-2 py-1 rounded-full">{lead.plan}</span></td>
                                 <td className="py-4 px-2 text-[10px] text-gray-500">{new Date(lead.timestamp).toLocaleDateString()}</td>
                              </tr>
@@ -1248,7 +1249,6 @@ const App = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
-              {/* Sidebar tools */}
               <div className="lg:col-span-1 space-y-8">
                 <div className="bg-black/40 border border-white/5 rounded-[2rem] p-8 space-y-6">
                   <h4 className="text-xs font-black text-[#FF5C00] uppercase tracking-widest italic border-b border-white/5 pb-4">Herramientas</h4>
@@ -1279,7 +1279,6 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Main content: history cards */}
               <div className="lg:col-span-3">
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-2xl font-black uppercase italic flex items-center gap-3">
@@ -1456,10 +1455,13 @@ const App = () => {
                 </form>
               </>
             ) : (
-              <div className="text-center py-20 animate-in zoom-in duration-500">
+              <div className="text-center py-10 animate-in zoom-in duration-500">
                 <div className="bg-green-500 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(34,197,94,0.4)]"><Check className="w-12 h-12 text-white" /></div>
                 <h3 className="text-4xl font-black uppercase italic">{t('successMsg')}</h3>
-                <p className="text-gray-400 font-bold uppercase mt-4">{t('successSub')}</p>
+                <p className="text-gray-400 font-bold uppercase mt-4 text-sm leading-relaxed max-w-sm mx-auto">{t('successSub')}</p>
+                <button onClick={() => { setShowSignup(null); setSignupSuccess(false); setSignupForm({ name: '', email: '', phone: '' }); }} className="mt-10 bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-xl font-black uppercase text-xs transition-all border border-white/5">
+                  ENTENDIDO, VOLVER AL GENERADOR
+                </button>
               </div>
             )}
            </div>
@@ -1485,7 +1487,7 @@ const App = () => {
         <section className="max-w-4xl mx-auto px-6 mb-40">
           <div className="bg-[#141414] border-2 border-[#FF5C00]/30 rounded-[2.5rem] p-8 md:p-12 shadow-[0_0_100px_rgba(255,92,0,0.1)] relative overflow-hidden">
             <div className="absolute -top-6 left-12 bg-[#FF5C00] text-black font-black uppercase px-6 py-2 rounded-xl text-[10px] italic shadow-xl z-20">
-              {isAdmin ? "Admin Dashboard (Unlimited Access)" : `${t('credits')}: ${Math.max(0, (userPlan === 'starter' ? STARTER_LIMIT : MAX_FREE_TRIAL) - trialCount)} / ${userPlan === 'starter' ? STARTER_LIMIT : MAX_FREE_TRIAL}`}
+              {isAdmin ? "Admin Dashboard (Unlimited Access)" : `${t('credits')}: ${Math.max(0, currentLimit - trialCount)} / ${currentLimit}`}
             </div>
             
             <div className="space-y-8">
@@ -1565,13 +1567,21 @@ const App = () => {
         </section>
 
         {/* PRICING SECTION */}
-        <section id="pricing" className="max-w-6xl mx-auto px-6 mb-40 scroll-mt-32">
+        <section id="pricing" className="max-w-7xl mx-auto px-6 mb-40 scroll-mt-32">
           <div className="text-center mb-16">
             <Badge>{language === 'es' ? 'Inversión' : 'Investment'}</Badge>
             <h2 className="text-4xl md:text-6xl font-black uppercase italic mb-4">{t('pricingTitle')}</h2>
             <p className="text-gray-500 font-bold uppercase tracking-widest italic">{t('pricingSub')}</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-stretch">
+            <PricingCard 
+              lang={language} 
+              title="Registro Gratis" 
+              price="0" 
+              features={language === 'es' ? ["Prueba la herramienta", "Guarda tu historial", "Bóveda estratégica", "Ideal para empezar"] : ["Try the tool", "Save history", "Strategic vault", "Perfect to start"]} 
+              cta={language === 'es' ? 'Regístrate Gratis' : 'Register Free'} 
+              onCtaClick={() => setShowSignup('Free Plan')}
+            />
             <PricingCard 
               lang={language} 
               title="Starter Offer" 
@@ -1580,7 +1590,7 @@ const App = () => {
               promoText={language === 'es' ? '50 primeros por vida' : 'First 50 for life'}
               cta={language === 'es' ? 'Empezar a Escalar' : 'Start Scaling'} 
               onCtaClick={() => window.location.href = 'https://buy.stripe.com/3cI7sL37IdAw7W52pCfjG0V'} 
-              features={language === 'es' ? ["10 Generaciones al mes", "Marco básico de $100M Offers", "Soporte vía Email", "Exportar a JSON/TXT"] : ["10 Generations/mo", "$100M Offers framework", "Email Support", "JSON/TXT Export"]} 
+              features={language === 'es' ? ["10 Generaciones al mes", "Super Agente IA", "Soporte vía Email", "Exportar a JSON/TXT"] : ["10 Generations/mo", "Super AI Agent", "Email Support", "JSON/TXT Export"]} 
             />
             <PricingCard 
               lang={language} 
@@ -1590,7 +1600,7 @@ const App = () => {
               popular={true} 
               cta={language === 'es' ? 'Domina tu Mercado' : 'Dominate your Market'} 
               onCtaClick={setShowSignup} 
-              features={language === 'es' ? ["Generaciones ILIMITADAS", "Acceso a Gemini 3 Ultra", "Analizador de Competencia", "Generador de Guiones de Venta", "Soporte Prioritario VIP"] : ["UNLIMITED Generations", "Gemini 3 Ultra Access", "Competitor Analyzer", "Sales Script Gen", "Priority VIP Support"]} 
+              features={language === 'es' ? ["Generaciones ILIMITADAS", "Todos Los Agentes IA", "Analizador de Competencia", "Generador de Guiones de Venta", "Soporte Prioritario VIP"] : ["UNLIMITED Generations", "All AI Agents", "Competitor Analyzer", "Sales Script Gen", "Priority VIP Support"]} 
             />
             <PricingCard 
               lang={language} 
