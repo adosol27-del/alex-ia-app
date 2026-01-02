@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { GoogleGenAI } from "@google/genai";
@@ -189,7 +190,7 @@ const translations = {
   en: {
     badge: "Create irresistible offers that sell themselves",
     heroTitle: "STOP SELLING <span class='text-[#FF5C00]'>CHEAP</span> AND START BEING <span class='text-[#FF5C00]'>IRRESISTIBLE</span>",
-    heroSub: "The AI that designs your Grand Slam offer in seconds. Don't compete on price, compete on <span class='text-white font-black underline decoration-[#FF5C00]'>massive value</span>.",
+    heroSub: "The IA that designs your Grand Slam offer in seconds. Don't compete on price, compete on <span class='text-white font-black underline decoration-[#FF5C00]'>massive value</span>.",
     placeholder: "Tell me what you sell, to whom, and how you charge right now. E.g.: 'Gym membership $30/mo for women 25-40 looking to lose weight' or 'Clothing online store, avg ticket $45'...",
     generateBtn: "GENERATE GRAND SLAM OFFER",
     generatingBtn: "DESIGNING MASSIVE VALUE...",
@@ -1567,30 +1568,38 @@ const App = () => {
                 )}
               </div>
 
-              <button
-                onClick={isLocked ? scrollToPricing : generateOffer}
-                disabled={loading || (!input.trim() && !isLocked)}
-                className={`w-full relative overflow-hidden font-black py-8 rounded-3xl uppercase tracking-tighter text-2xl md:text-3xl flex items-center justify-center gap-4 transition-all shadow-lg active:scale-95 group ${loading ? 'bg-black text-[#FF5C00] cursor-wait animate-offer-pulse' : 'bg-[#FF5C00] hover:bg-[#E04F00] text-white hover:scale-[1.01]'}`}
-              >
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={isLocked ? scrollToPricing : generateOffer}
+                  disabled={loading || (!input.trim() && !isLocked)}
+                  className={`w-full relative overflow-hidden font-black py-8 rounded-3xl uppercase tracking-tighter text-2xl md:text-3xl flex items-center justify-center gap-4 transition-all shadow-lg active:scale-95 group ${loading ? 'bg-black text-[#FF5C00] cursor-wait animate-offer-pulse' : 'bg-[#FF5C00] hover:bg-[#E04F00] text-white hover:scale-[1.01]'}`}
+                >
+                  {loading && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-offer-scan pointer-events-none" />
+                  )}
+                  
+                  {loading ? (
+                    <>
+                      <Loader2 className="animate-spin w-10 h-10 shrink-0" />
+                      <span className="relative z-10">{t('generatingBtn')}</span>
+                      <Sparkles className="w-8 h-8 text-[#FF5C00] animate-pulse" />
+                    </>
+                  ) : isLocked ? (
+                    t('unlockNow')
+                  ) : (
+                    <>
+                      {t('generateBtn')}
+                      <ArrowRight className="w-8 h-8 group-hover:translate-x-2 transition-transform" />
+                    </>
+                  )}
+                </button>
+
                 {loading && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-offer-scan pointer-events-none" />
+                  <div className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden border border-white/5 animate-in fade-in duration-300">
+                    <div className="h-full bg-[#FF5C00] shadow-[0_0_15px_rgba(255,92,0,0.8)] animate-progress-fill rounded-full" />
+                  </div>
                 )}
-                
-                {loading ? (
-                  <>
-                    <Loader2 className="animate-spin w-10 h-10 shrink-0" />
-                    <span className="relative z-10">{t('generatingBtn')}</span>
-                    <Sparkles className="w-8 h-8 text-[#FF5C00] animate-pulse" />
-                  </>
-                ) : isLocked ? (
-                  t('unlockNow')
-                ) : (
-                  <>
-                    {t('generateBtn')}
-                    <ArrowRight className="w-8 h-8 group-hover:translate-x-2 transition-transform" />
-                  </>
-                )}
-              </button>
+              </div>
             </div>
           </div>
 
@@ -1692,6 +1701,18 @@ const App = () => {
           to { transform: translateX(100%); }
         }
         .animate-offer-scan { animation: offer-scan 1.5s infinite linear; }
+
+        @keyframes progress-fill {
+          0% { width: 0%; }
+          10% { width: 30%; }
+          30% { width: 60%; }
+          60% { width: 85%; }
+          90% { width: 92%; }
+          100% { width: 95%; }
+        }
+        .animate-progress-fill {
+          animation: progress-fill 15s cubic-bezier(0.1, 0.5, 0.1, 1) forwards;
+        }
 
         ::-webkit-scrollbar { width: 10px; }
         ::-webkit-scrollbar-track { background: #0A0A0A; }
