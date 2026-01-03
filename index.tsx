@@ -825,6 +825,7 @@ const App = () => {
         .replace(/##\s+/g, '--- ')
         .replace(/#+\s/g, '')
         .replace(/\*\*/g, '')
+        .replace(/\*\*/g, '')
         .replace(/\*/g, '•');
         
       const splitText = doc.splitTextToSize(cleanText, 175);
@@ -1034,11 +1035,11 @@ const App = () => {
 
             {!isAdmin && userPlan === 'free' && (
               <button 
-                onClick={() => setShowLogin(true)}
-                className="text-xs font-black uppercase flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 transition-all"
+                onClick={() => setShowSignup('Free Plan')}
+                className="text-xs font-black uppercase flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#FF5C00] text-white hover:bg-[#E04F00] transition-all shadow-[0_5px_15px_rgba(255,92,0,0.3)]"
               >
-                <LogIn className="w-4 h-4 text-[#FF5C00]" />
-                {t('loginBtn')}
+                <UserPlus className="w-4 h-4" />
+                {language === 'es' ? 'Regístrate' : 'Register'}
               </button>
             )}
 
@@ -1068,16 +1069,12 @@ const App = () => {
               </button>
             )}
             
-            {(userPlan !== 'free' || isAdmin) ? (
+            {(userPlan !== 'free' || isAdmin) && (
               <button 
                 onClick={logoutAdmin}
                 className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all border border-red-500/20"
               >
                 {language === 'es' ? 'Salir' : 'Logout'}
-              </button>
-            ) : (
-              <button onClick={scrollToPricing} className="bg-white/5 hover:bg-white/10 px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all border border-white/10">
-                {t('viewPlans')}
               </button>
             )}
           </div>
