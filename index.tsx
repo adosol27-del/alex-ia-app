@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { GoogleGenAI } from "@google/genai";
@@ -148,8 +147,8 @@ const translations = {
     delete: "Eliminar",
     pricingTitle: "ELIGE TU VEHÍCULO DE ESCALADO",
     pricingSub: "Haz que se sientan estúpidos diciendo que no.",
-    lockedTitle: "ACCESO BLOQUEADO",
-    lockedSub: "HAS AGOTADO TU BÚSQUEDA GRATUITA. REGÍSTRATE GRATIS PARA SEGUIR ESCALANDO.",
+    lockedTitle: "REGISTRO REQUERIDO",
+    lockedSub: "DEBES REGISTRARTE GRATIS PARA PODER CREAR TU OFERTA GRAND SLAM.",
     unlockNow: "REGÍSTRATE GRATIS Y PRUÉBALA",
     langName: "ES",
     navAdmin: "Panel Maestro",
@@ -207,8 +206,8 @@ const translations = {
     delete: "Delete",
     pricingTitle: "CHOOSE YOUR SCALING VEHICLE",
     pricingSub: "Make them feel stupid saying no.",
-    lockedTitle: "ACCESS LOCKED",
-    lockedSub: "YOU HAVE EXHAUSTED YOUR FREE SEARCH. REGISTER FOR FREE TO CONTINUE SCALING.",
+    lockedTitle: "REGISTRATION REQUIRED",
+    lockedSub: "PLEASE REGISTER FOR FREE TO START CREATING YOUR GRAND SLAM OFFER.",
     unlockNow: "REGISTER FOR FREE & TRY IT",
     langName: "EN",
     navAdmin: "Master Panel",
@@ -871,7 +870,7 @@ const App = () => {
     document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const isLocked = !isAdmin && userPlan === 'free' && trialCount >= STARTER_LIMIT; 
+  const isLocked = !isAdmin && userPlan === 'free'; 
   const isScaleMaster = isAdmin || userPlan === 'scale-master' || userPlan === 'agency';
   const currentLimit = userPlan === 'starter' ? STARTER_LIMIT * 5 : STARTER_LIMIT;
 
@@ -1561,7 +1560,7 @@ const App = () => {
                     <Lock className="w-10 h-10 text-[#FF5C00] mb-6" />
                     <h4 className="text-3xl font-black uppercase italic mb-2">{t('lockedTitle')}</h4>
                     <p className="text-gray-300 font-bold uppercase text-xs tracking-widest italic max-w-xs">{t('lockedSub')}</p>
-                    <button onClick={scrollToPricing} className="mt-8 bg-[#FF5C00] text-white px-10 py-5 rounded-2xl font-black uppercase text-xl shadow-2xl hover:scale-[1.02] transition-all">
+                    <button onClick={() => setShowSignup('Free Plan')} className="mt-8 bg-[#FF5C00] text-white px-10 py-5 rounded-2xl font-black uppercase text-xl shadow-2xl hover:scale-[1.02] transition-all">
                       {t('unlockNow')}
                     </button>
                   </div>
@@ -1570,7 +1569,7 @@ const App = () => {
 
               <div className="flex flex-col gap-4">
                 <button
-                  onClick={isLocked ? scrollToPricing : generateOffer}
+                  onClick={isLocked ? () => setShowSignup('Free Plan') : generateOffer}
                   disabled={loading || (!input.trim() && !isLocked)}
                   className={`w-full relative overflow-hidden font-black py-8 rounded-3xl uppercase tracking-tighter text-2xl md:text-3xl flex items-center justify-center gap-4 transition-all shadow-lg active:scale-95 group ${loading ? 'bg-black text-[#FF5C00] cursor-wait animate-offer-pulse' : 'bg-[#FF5C00] hover:bg-[#E04F00] text-white hover:scale-[1.01]'}`}
                 >
