@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { GoogleGenAI } from "@google/genai";
@@ -68,6 +69,7 @@ import {
   LogIn,
   LayoutDashboard,
   User
+  // Fix: Removed ShieldLock as it is not exported from lucide-react
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { jsPDF } from "jspdf";
@@ -333,12 +335,16 @@ const App = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [userPlan, setUserPlan] = useState<UserPlan>('free');
   const [showLogin, setShowLogin] = useState(false);
+  const [showAdminSecretLogin, setShowAdminSecretLogin] = useState(false);
   const [showSignup, setShowSignup] = useState<string | null>(null);
   const [showPremiumHub, setShowPremiumHub] = useState(false);
   const [showUserDashboard, setShowUserDashboard] = useState(false);
   const [loginPass, setLoginPass] = useState('');
   const [loginEmail, setLoginEmail] = useState('');
+  const [adminSecretEmail, setAdminSecretEmail] = useState('');
+  const [adminSecretPass, setAdminSecretPass] = useState('');
   const [loginError, setLoginError] = useState(false);
+  const [adminError, setAdminError] = useState(false);
   const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeItem[]>([]);
   const [permanentBrain, setPermanentBrain] = useState<string>('');
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
@@ -444,7 +450,7 @@ const App = () => {
       const newCount = logoClicks + 1;
       setLogoClicks(newCount);
       if (newCount >= 5) {
-        setShowLogin(true);
+        setShowAdminSecretLogin(true);
         setLogoClicks(0);
       }
     } else {
@@ -477,12 +483,41 @@ const App = () => {
       setLoginEmail('');
       setLoginPass('');
       setLoginError(false);
-      logUsage("Login Administrador", OWNER_EMAIL);
+      logUsage("Login Usuario", OWNER_EMAIL);
       return;
     }
 
     setLoginError(true);
     setTimeout(() => setLoginError(false), 2000);
+  };
+
+  const handleAdminSecretLogin = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (adminSecretEmail.toLowerCase() === OWNER_EMAIL && adminSecretPass === OWNER_PASS) {
+      setIsAdmin(true);
+      setUserPlan('scale-master');
+      setShowAdminSecretLogin(false);
+      setAdminMenuOpen(true);
+      
+      const { data } = await supabase.from('ofertas').select('*').eq('usuario_email', OWNER_EMAIL);
+      if (data) {
+          setHistory(data.map(o => ({
+            id: o.id.toString(),
+            input: o.input,
+            text: o.texto,
+            offerType: o.tipo_oferta as OfferCategory,
+            timestamp: new Date(o.timestamp).getTime()
+          })));
+      }
+
+      setAdminSecretEmail('');
+      setAdminSecretPass('');
+      setAdminError(false);
+      logUsage("Login Administrador (Entrada Secreta)", OWNER_EMAIL);
+      return;
+    }
+    setAdminError(true);
+    setTimeout(() => setAdminError(false), 2000);
   };
 
   const handleSignupSubmit = async (e: React.FormEvent) => {
@@ -1035,11 +1070,11 @@ const App = () => {
 
             {!isAdmin && userPlan === 'free' && (
               <button 
-                onClick={() => setShowSignup('Free Plan')}
-                className="text-xs font-black uppercase flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#FF5C00] text-white hover:bg-[#E04F00] transition-all shadow-[0_5px_15px_rgba(255,92,0,0.3)]"
+                onClick={() => setShowLogin(true)}
+                className="text-xs font-black uppercase flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 transition-all"
               >
-                <UserPlus className="w-4 h-4" />
-                {language === 'es' ? 'Regístrate' : 'Register'}
+                <LogIn className="w-4 h-4 text-[#FF5C00]" />
+                {t('loginBtn')}
               </button>
             )}
 
@@ -1296,6 +1331,16 @@ const App = () => {
                 <div className="bg-black/40 border border-white/5 rounded-[2rem] p-8 space-y-6">
                   <h4 className="text-xs font-black text-[#FF5C00] uppercase tracking-widest italic border-b border-white/5 pb-4">Herramientas</h4>
                   
+                  {userPlan === 'free' && (
+                    <button 
+                      onClick={() => setShowSignup('Free Plan')}
+                      className="w-full flex items-center justify-center gap-2 p-4 bg-[#FF5C00] text-white rounded-2xl hover:bg-[#E04F00] transition-all font-black uppercase text-[10px] shadow-lg mb-4"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      {language === 'es' ? 'Regístrate Ahora' : 'Register Now'}
+                    </button>
+                  )}
+
                   <div className="space-y-3">
                     <button onClick={exportJSON} className="w-full flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-[#FF5C00]/10 hover:text-[#FF5C00] transition-all group">
                       <div className="flex items-center gap-3">
@@ -1328,8 +1373,42 @@ const App = () => {
                     <History className="w-6 h-6 text-[#FF5C00]" /> 
                     {t('historyTitle')}
                   </h3>
-                  <div className="bg-white/5 px-4 py-2 rounded-full border border-white/10">
-                    <span className="text-[10px] font-black uppercase text-gray-500">{history.length} ITEMS TOTALES</span>
+                  
+                  {/* Improved: Added Export button group above history list */}
+                  <div className="flex items-center gap-3">
+                    {history.length > 0 && (
+                      <div className="relative">
+                        <button 
+                          onClick={() => setExportMenuOpen(!exportMenuOpen)}
+                          className="bg-white/10 px-5 py-2.5 rounded-2xl border border-white/10 text-[10px] font-black uppercase flex items-center gap-2 hover:bg-[#FF5C00]/20 hover:text-[#FF5C00] transition-all group"
+                        >
+                          <Download className="w-4 h-4" />
+                          {t('exportBtn')}
+                          <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${exportMenuOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        {exportMenuOpen && (
+                          <div className="absolute right-0 mt-3 w-48 bg-[#111] border-2 border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                            <button 
+                              onClick={exportJSON}
+                              className="w-full flex items-center gap-3 px-5 py-4 text-[10px] font-black uppercase text-gray-400 hover:text-white hover:bg-white/5 transition-all border-b border-white/5"
+                            >
+                              <FileJson className="w-4 h-4 text-blue-500" />
+                              {t('exportJson')}
+                            </button>
+                            <button 
+                              onClick={exportTXT}
+                              className="w-full flex items-center gap-3 px-5 py-4 text-[10px] font-black uppercase text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                            >
+                              <FileText className="w-4 h-4 text-green-500" />
+                              {t('exportTxt')}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <div className="bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                      <span className="text-[10px] font-black uppercase text-gray-500">{history.length} ITEMS TOTALES</span>
+                    </div>
                   </div>
                 </div>
 
@@ -1348,6 +1427,7 @@ const App = () => {
                       const titleMatch = item.text.match(/##\s*(.*)/) || item.text.match(/#\s*(.*)/);
                       const title = titleMatch ? titleMatch[1].replace(/\*/g, '').trim() : "Oferta Grand Slam";
                       const isExpanded = expandedOfferId === item.id;
+                      // Fixed: Creation date format DD/MM/YYYY HH:MM
                       const dateStr = new Date(item.timestamp).toLocaleString(language === 'es' ? 'es-ES' : 'en-US', {
                         day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
                       });
@@ -1360,9 +1440,11 @@ const App = () => {
                                 <span className="text-[10px] font-black text-[#FF5C00] uppercase tracking-[0.2em] bg-[#FF5C00]/10 px-3 py-1 rounded-full">{dateStr}</span>
                                 <span className="bg-white/5 px-3 py-1 rounded-full text-[9px] font-black uppercase text-gray-400 border border-white/5 italic">{item.offerType}</span>
                               </div>
+                              {/* Improved: Offer title extracted from result */}
                               <h4 className="text-3xl font-black uppercase italic text-white group-hover:text-[#FF5C00] transition-colors mb-4 truncate">{title}</h4>
                               <div className="bg-white/5 border border-white/10 p-5 rounded-2xl">
-                                <p className="text-gray-400 text-xs font-bold italic leading-relaxed line-clamp-2">
+                                {/* Improved: 1-line summary using line-clamp-1 */}
+                                <p className="text-gray-400 text-xs font-bold italic leading-relaxed line-clamp-1">
                                   "{item.input}"
                                 </p>
                               </div>
@@ -1449,28 +1531,59 @@ const App = () => {
           </div>
       )}
 
-      {/* LOGIN MODAL */}
+      {/* ADMIN SECRET LOGIN MODAL */}
+      {showAdminSecretLogin && (
+        <div className="fixed inset-0 z-[120] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 animate-in zoom-in duration-300">
+          <div className="bg-[#0F0F0F] border-2 border-red-500/50 w-full max-w-md rounded-[2.5rem] p-12 relative shadow-[0_0_80px_rgba(239,68,68,0.2)]">
+            <button onClick={() => setShowAdminSecretLogin(false)} className="absolute top-8 right-8 text-gray-600 hover:text-white transition-colors"><X className="w-6 h-6" /></button>
+            <div className="text-center mb-10">
+              {/* Fixed: Use Lock instead of ShieldLock */}
+              <Lock className="w-16 h-16 text-red-500 mx-auto mb-6 animate-pulse" />
+              <h3 className="text-3xl font-black uppercase italic tracking-tighter">CENTRO DE MANDO</h3>
+              <p className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em] mt-2">SOLO PERSONAL AUTORIZADO</p>
+            </div>
+            <form onSubmit={handleAdminSecretLogin} className="space-y-5">
+              <div className="space-y-2">
+                <input 
+                  type="email" placeholder="ID MAESTRO"
+                  className={`w-full bg-black border border-white/10 rounded-2xl p-5 text-center text-sm font-bold outline-none focus:border-red-500 transition-all tracking-widest`}
+                  value={adminSecretEmail} onChange={(e) => setAdminSecretEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <input 
+                  autoFocus type="password" placeholder="CLAVE DE ACCESO"
+                  className={`w-full bg-black border border-white/10 rounded-2xl p-5 text-center text-2xl font-black tracking-[0.4em] outline-none focus:border-red-500 transition-all ${adminError ? 'border-red-500 animate-shake' : ''}`}
+                  value={adminSecretPass} onChange={(e) => setAdminSecretPass(e.target.value)}
+                />
+              </div>
+              <button type="submit" className="w-full bg-red-600 text-white py-6 rounded-2xl font-black uppercase shadow-2xl hover:bg-red-700 transition-all tracking-tighter">INICIAR PROTOCOLO ADMIN</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* USER LOGIN MODAL */}
       {showLogin && (
         <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-300">
-          <div className="bg-[#141414] border-2 border-[#FF5C00]/30 w-full max-w-md rounded-[2.5rem] p-10 relative shadow-[0_0_50px_rgba(255,92,0,0.25)]">
+          <div className="bg-[#141414] border-2 border-[#FF5C00]/30 w-full max-md rounded-[2.5rem] p-10 relative shadow-[0_0_50px_rgba(255,92,0,0.25)]">
             <button onClick={() => setShowLogin(false)} className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"><X className="w-6 h-6" /></button>
             <div className="text-center mb-8">
               <KeyRound className="w-12 h-12 text-[#FF5C00] mx-auto mb-4" />
               <h3 className="text-3xl font-black uppercase italic">{t('loginBtn')}</h3>
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mt-2 italic">Acceso Administrador</p>
             </div>
             <form onSubmit={handleAdminLogin} className="space-y-4">
               <input 
-                type="email" placeholder="EMAIL DE ADMINISTRADOR"
+                type="email" placeholder="EMAIL"
                 className={`w-full bg-black/60 border-2 rounded-2xl p-4 text-center text-sm font-bold outline-none border-white/5 focus:border-[#FF5C00]`}
                 value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)}
               />
               <input 
-                autoFocus type="password" placeholder="CONTRASEÑA MAESTRA"
+                autoFocus type="password" placeholder="CONTRASEÑA"
                 className={`w-full bg-black/60 border-2 rounded-2xl p-5 text-center text-xl font-black tracking-[0.3em] outline-none ${loginError ? 'border-red-500 animate-shake' : 'border-white/5 focus:border-[#FF5C00]'}`}
                 value={loginPass} onChange={(e) => setLoginPass(e.target.value)}
               />
-              <button type="submit" className="w-full bg-[#FF5C00] text-white py-5 rounded-2xl font-black uppercase shadow-xl hover:scale-[1.02] transition-all">ACCEDER AL PANEL</button>
+              <button type="submit" className="w-full bg-[#FF5C00] text-white py-5 rounded-2xl font-black uppercase shadow-xl hover:scale-[1.02] transition-all">ENTRAR</button>
             </form>
           </div>
         </div>
