@@ -563,7 +563,7 @@ const App = () => {
     setCompetitorResult('');
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
       const stream = await ai.models.generateContentStream({
         model: 'gemini-3-pro-preview',
         contents: `ANALIZA ESTA COMPETENCIA: ${competitorInput}. 
@@ -597,7 +597,7 @@ const App = () => {
     const contextOffer = selectedOffer ? selectedOffer.text : result?.text || input;
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
       const stream = await ai.models.generateContentStream({
         model: 'gemini-3-pro-preview',
         contents: `GENERA UN GUION DE VENTAS TIPO: ${scriptType.toUpperCase()}.
@@ -629,7 +629,7 @@ const App = () => {
     setResult({ text: '', isStreaming: true });
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
       let finalSystemInstruction = getSystemInstruction(language);
       finalSystemInstruction += `\n[KNOWLEDGE_NUCLEUS]:\n${permanentBrain}\n`;
       
